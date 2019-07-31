@@ -11,9 +11,19 @@ import UIKit
 class TodoListViewController: UITableViewController {
     
     var itemArray = ["Find Mike", "But Orange", "Read your note"]
+    
+    let defaults = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        //to retrieve the value that was saved in our userDefault method
+        
+        guard let items = defaults.array(forKey: "TodoListArray") as? [String] else {
+            return
+            
+        }
+        itemArray = items
        
     }
 //MARK - TableView DataSource Methods
@@ -60,6 +70,10 @@ class TodoListViewController: UITableViewController {
                 return
             }
             self.itemArray.append(text)
+            
+            // set in the userDefault method is used to store the value that you want to persist. 
+            self.defaults.set(self.itemArray, forKey: "TodoListArray")
+            
             self.tableView.reloadData()
         }
         alert.addTextField { (alertTextField) in
