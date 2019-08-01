@@ -10,7 +10,7 @@ import UIKit
 
 class TodoListViewController: UITableViewController {
     
-    var itemArray = ["Find Mike", "But Orange", "Read your note"]
+    var itemArray = [Item]()
     
     let defaults = UserDefaults.standard
 
@@ -19,9 +19,23 @@ class TodoListViewController: UITableViewController {
         
         //to retrieve the value that was saved in our userDefault method
         
-        guard let items = defaults.array(forKey: "TodoListArray") as? [String] else {
+        let newItem1 = Item()
+        newItem1.titles = "Find Mike"
+        itemArray.append(newItem1)
+        
+        let newItem2 = Item()
+        newItem2.titles = "Buy Orange"
+        itemArray.append(newItem2)
+        
+        let newItem3 = Item()
+        newItem3.titles = "Read Your note"
+        itemArray.append(newItem3)
+        
+        
+        
+        guard let items = defaults.array(forKey: "TodoListArray") as? [Item] else {
             return
-            
+
         }
         itemArray = items
        
@@ -36,21 +50,36 @@ class TodoListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "TodoListCell", for: indexPath)
-        cell.textLabel?.text = itemArray[indexPath.row]
-        return cell
         
+        let item = itemArray[indexPath.row]
+        cell.textLabel?.text = item.titles
+        
+        
+        //set the cells in the tableView to have an accessoryType of checkMark
+        //tenary operator value = condition ? valueIFTrue : valueIffalse
+        
+//       cell.accessoryType = item.done ? .checkmark : .none
+        
+
+        
+        return cell
     }
     
     //MARK - TableView Delegate Methods
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 //        print(itemArray[indexPath.row])
-        //set the cells in the tableView to have an accessoryType of checkMark
+        
+        //checking if the cell as been used before
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+
         if  tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-              tableView.cellForRow(at: indexPath)?.accessoryType = .none
+            tableView.cellForRow(at: indexPath)?.accessoryType = .none
         }else {
-              tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
         }
+
+
         
         tableView.deselectRow(at: indexPath, animated: true)
         
@@ -66,12 +95,14 @@ class TodoListViewController: UITableViewController {
         //UIAlertAction is used to create a button for the user to press
         let action = UIAlertAction(title: "Add item", style: .default) {
             (action) in
-            guard let text = textField.text else {
+            
+            let newItem = Item()
+            guard newItem.titles == textField.text else {
                 return
             }
-            self.itemArray.append(text)
+            self.itemArray.append(newItem)
             
-            // set in the userDefault method is used to store the value that you want to persist. 
+            // set in the userDefault method is used to store th e value that you want to persist.
             self.defaults.set(self.itemArray, forKey: "TodoListArray")
             
             self.tableView.reloadData()
