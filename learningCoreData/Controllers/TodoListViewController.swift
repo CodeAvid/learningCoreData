@@ -12,34 +12,19 @@ class TodoListViewController: UITableViewController {
     
     var itemArray = [Item]()
     
-    let defaults = UserDefaults.standard
+   
+    
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Item.plist")
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         //to retrieve the value that was saved in our userDefault method
         
-        let newItem1 = Item()
-        newItem1.titles = "Find Mike"
-        itemArray.append(newItem1)
         
-        let newItem2 = Item()
-        newItem2.titles = "Buy Orange"
-        itemArray.append(newItem2)
+        loadItems()
         
-        let newItem3 = Item()
-        newItem3.titles = "Read Your note"
-        itemArray.append(newItem3)
-        
-        
-        
-        guard let items = defaults.array(forKey: "TodoListArray") as? [Item] else {
-            return
-
         }
-        itemArray = items
-       
-    }
 //MARK - TableView DataSource Methods
     
   
@@ -58,7 +43,7 @@ class TodoListViewController: UITableViewController {
         //set the cells in the tableView to have an accessoryType of checkMark
         //tenary operator value = condition ? valueIFTrue : valueIffalse
         
-//       cell.accessoryType = item.done ? .checkmark : .none
+     cell.accessoryType = item.done ? .checkmark : .none
         
 
         
@@ -72,14 +57,7 @@ class TodoListViewController: UITableViewController {
         
         //checking if the cell as been used before
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
-
-        if  tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        }else {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
-
-
+        self.saveItem()
         
         tableView.deselectRow(at: indexPath, animated: true)
         
@@ -102,10 +80,9 @@ class TodoListViewController: UITableViewController {
             }
             self.itemArray.append(newItem)
             
-            // set in the userDefault method is used to store th e value that you want to persist.
-            self.defaults.set(self.itemArray, forKey: "TodoListArray")
+            self.saveItem()
             
-            self.tableView.reloadData()
+            
         }
         alert.addTextField { (alertTextField) in
             alertTextField.placeholder = "Create new item"
@@ -115,6 +92,41 @@ class TodoListViewController: UITableViewController {
         alert.addAction(action)
         //show your alert by using present
         present(alert, animated: true, completion: nil )
+        
+    }
+    
+    //MARK - Model Manipulation Method (a save Data method)
+    
+    func saveItem() {
+        
+        //create an instance encoder of a propertyPlist encoder
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode( itemArray)
+            try data.write(to: dataFilePath!)
+        }
+        catch {
+            
+            print("Error in encoding arrays \(error)")
+            
+        }
+        self.tableView.reloadData()
+        
+    }
+    
+    func loadItems() {
+       
+        guard let data = try?  Data(contentsOf: dataFilePath!) else {
+            return
+        }
+        let decoder = PropertyListDecoder()
+        do {
+       itemArray = try  decoder.decode([Item].self, from: data)
+            
+        }catch {
+             print("Error in decoding array Item \(error)")
+        }
         
     }
     
